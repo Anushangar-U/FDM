@@ -1,0 +1,20 @@
+{
+  "selected_model": "Random Forest - tuned extended",
+  "feature_set": "extended",
+  "hyperparameters": {
+    "n_estimators": 800,
+    "min_samples_split": 4,
+    "min_samples_leaf": 1,
+    "max_features": "log2",
+    "max_depth": null,
+    "criterion": "gini",
+    "class_weight": null,
+    "random_state": 42,
+    "n_jobs": 1
+  },
+  "cv_mean_macro_f1": 0.9015142534938398,
+  "cv_std_macro_f1": 0.04224772838114464,
+  "cv_mean_balanced_accuracy": 0.8930609618284748,
+  "selected_before_test_evaluation": true,
+  "reason": "Highest CV macro F1, better minimum occupied-class recall and lower fold variability than tuned SVC; the raw-sensor gain justifies the added features."
+}

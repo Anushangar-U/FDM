@@ -1,0 +1,70 @@
+{
+  "selected_model": "Random Forest - tuned extended",
+  "feature_set": "extended",
+  "input_features": [
+    "S5_CO2",
+    "S5_CO2_Slope",
+    "S6_PIR",
+    "S7_PIR",
+    "Time_of_Day_Minutes",
+    "Avg_Temp",
+    "Avg_Light",
+    "Avg_Sound",
+    "PIR_Activity",
+    "Temp_Spread",
+    "Light_Spread",
+    "CO2_Level_Code",
+    "S1_Temp",
+    "S2_Temp",
+    "S3_Temp",
+    "S4_Temp",
+    "S1_Light",
+    "S2_Light",
+    "S3_Light",
+    "S4_Light",
+    "S1_Sound",
+    "S2_Sound",
+    "S3_Sound",
+    "S4_Sound"
+  ],
+  "generated_features": [
+    "Sound_Level_Code"
+  ],
+  "target": "Room_Occupancy_Count",
+  "target_classes": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "hyperparameters": {
+    "n_estimators": 800,
+    "min_samples_split": 4,
+    "min_samples_leaf": 1,
+    "max_features": "log2",
+    "max_depth": null,
+    "criterion": "gini",
+    "class_weight": null,
+    "random_state": 42,
+    "n_jobs": 1
+  },
+  "transformer_import": "src.pe2_transformers.SoundTertileEncoder",
+  "sound_thresholds": [
+    0.065,
+    0.0725
+  ],
+  "cv_strategy": "4-fold StratifiedGroupKFold; 30-minute blocks; shuffle=True; random_state=42",
+  "cv_macro_f1": 0.9015142534938398,
+  "cv_macro_f1_sd": 0.04224772838114464,
+  "held_out_test_session": "2017/12/23",
+  "training_rows": 7350,
+  "test_rows": 2779,
+  "test_metrics": {
+    "accuracy": 0.9489024829075207,
+    "balanced_accuracy": 0.9115208955683235,
+    "macro_precision": 0.86742849742224,
+    "macro_recall": 0.9115208955683235,
+    "macro_f1": 0.8585565555115316,
+    "weighted_f1": 0.9525207238293754
+  }
+}
