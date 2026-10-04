@@ -98,6 +98,13 @@ h1 {
   color: #64748b;
 }
 
+.range-note {
+  max-width: 650px;
+  margin-top: 8px !important;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
 .sample-bookmark {
   display: flex;
   flex-direction: column;
@@ -106,9 +113,15 @@ h1 {
 }
 
 .sample-bookmark small {
+  max-width: 300px;
   color: #64748b;
   font-size: 0.78rem;
   font-weight: 700;
+  text-align: right;
+}
+
+.sample-bookmark small.status-error {
+  color: #b91c1c;
 }
 
 fieldset {
@@ -160,6 +173,25 @@ input:focus,
 select:focus {
   border-color: #0284c7;
   box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+}
+
+label.has-range-warning input,
+label.has-range-warning select {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+}
+
+.field-warning {
+  display: block;
+  margin-top: -1px;
+  color: #b91c1c;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.field-warning[hidden] {
+  display: none;
 }
 
 .primary-button,
@@ -354,6 +386,11 @@ select:focus {
   .sample-bookmark {
     width: 100%;
     align-items: stretch;
+  }
+
+  .sample-bookmark small {
+    max-width: none;
+    text-align: left;
   }
 
   .grid,
