@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Room Occupancy Estimator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <main class="page-shell">
+    <header class="hero">
+      <p class="eyebrow">IT3051 · Fundamentals of Data Mining</p>
+      <h1>Room Occupancy Estimator</h1>
+      <p class="hero-copy">
+        Enter the current room sensor readings to estimate whether the room contains 0, 1, 2, or 3 people.
+      </p>
+      <p class="model-chip">Model: {{ model_name }}</p>
+    </header>
+
+    <section class="card">
+      <div class="section-heading">
+        <div>
+          <h2>Sensor readings</h2>
+          <p>All fields are required. PIR values must be 0 or 1.</p>
+        </div>
+        <button class="secondary-button" id="sample-button" type="button">Use sample values</button>
+      </div>
+
+      <form id="prediction-form">
+        <fieldset>
+          <legend>Time</legend>
+          <div class="grid one-column">
+            <label>
+              Time of day
+              <input id="time" name="time" type="time" step="1" required>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Temperature sensors</legend>
+          <div class="grid">
+            <label>S1 Temp <input id="S1_Temp" name="S1_Temp" type="number" step="any" required></label>
+            <label>S2 Temp <input id="S2_Temp" name="S2_Temp" type="number" step="any" required></label>
+            <label>S3 Temp <input id="S3_Temp" name="S3_Temp" type="number" step="any" required></label>
+            <label>S4 Temp <input id="S4_Temp" name="S4_Temp" type="number" step="any" required></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Light sensors</legend>
+          <div class="grid">
+            <label>S1 Light <input id="S1_Light" name="S1_Light" type="number" min="0" step="any" required></label>
+            <label>S2 Light <input id="S2_Light" name="S2_Light" type="number" min="0" step="any" required></label>
+            <label>S3 Light <input id="S3_Light" name="S3_Light" type="number" min="0" step="any" required></label>
+            <label>S4 Light <input id="S4_Light" name="S4_Light" type="number" min="0" step="any" required></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Sound sensors</legend>
+          <div class="grid">
+            <label>S1 Sound <input id="S1_Sound" name="S1_Sound" type="number" min="0" step="any" required></label>
+            <label>S2 Sound <input id="S2_Sound" name="S2_Sound" type="number" min="0" step="any" required></label>
+            <label>S3 Sound <input id="S3_Sound" name="S3_Sound" type="number" min="0" step="any" required></label>
+            <label>S4 Sound <input id="S4_Sound" name="S4_Sound" type="number" min="0" step="any" required></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>CO₂ and motion</legend>
+          <div class="grid">
+            <label>S5 CO₂ <input id="S5_CO2" name="S5_CO2" type="number" min="0" step="any" required></label>
+            <label>S5 CO₂ slope <input id="S5_CO2_Slope" name="S5_CO2_Slope" type="number" step="any" required></label>
+            <label>
+              S6 PIR
+              <select id="S6_PIR" name="S6_PIR" required>
+                <option value="">Select</option>
+                <option value="0">0 · inactive</option>
+                <option value="1">1 · active</option>
+              </select>
+            </label>
+            <label>
+              S7 PIR
+              <select id="S7_PIR" name="S7_PIR" required>
+                <option value="">Select</option>
+                <option value="0">0 · inactive</option>
+                <option value="1">1 · active</option>
+              </select>
+            </label>
+          </div>
+        </fieldset>
+
+        <button class="primary-button" type="submit">Predict occupancy</button>
+      </form>
+    </section>
+
+    <section class="result-card" id="result-card" aria-live="polite" hidden>
+      <p class="result-label">Prediction</p>
+      <div class="occupancy-number" id="occupancy-number">–</div>
+      <h2 id="prediction-message"></h2>
+      <p id="prediction-detail"></p>
+    </section>
+  </main>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
