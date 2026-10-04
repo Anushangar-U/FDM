@@ -9,3 +9,6 @@ imbalanced-learn==0.14.2
 
 # Notebook execution in VS Code
 ipykernel==7.3.0
+
+# Stage 9/10 prediction system
+Flask==3.1.2
