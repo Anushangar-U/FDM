@@ -20,20 +20,6 @@ const numericFields = [
 
 let inputRanges = {};
 
-function currentTimeString() {
-  const now = new Date();
-  return [now.getHours(), now.getMinutes(), now.getSeconds()]
-    .map((value) => String(value).padStart(2, "0"))
-    .join(":");
-}
-
-function ensureHiddenTime() {
-  const timeInput = document.getElementById("time");
-  if (timeInput && !timeInput.value) {
-    timeInput.value = currentTimeString();
-  }
-}
-
 function closePredictionModal() {
   if (predictionModal.open) {
     predictionModal.close();
@@ -65,7 +51,6 @@ function showResult({ prediction = "!", message, detail = "", probabilities = nu
 }
 
 function collectPayload() {
-  ensureHiddenTime();
   const payload = { time: document.getElementById("time").value };
 
   for (const field of numericFields) {
@@ -247,7 +232,7 @@ async function autofillRealSample() {
     }
 
     fillForm(data.sample);
-    sampleStatus.textContent = `Loaded one real observation from ${data.available_records.toLocaleString()} dataset rows`;
+    sampleStatus.textContent = "";
   } catch (error) {
     sampleStatus.textContent = error.message;
     sampleStatus.classList.add("status-error");
@@ -333,5 +318,4 @@ form.addEventListener("submit", async (event) => {
   }
 });
 
-ensureHiddenTime();
 loadInputRanges();
