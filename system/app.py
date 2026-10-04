@@ -11,10 +11,12 @@ from __future__ import annotations
 
 from pathlib import Path
 import json
+import secrets
 import sys
 
 from flask import Flask, jsonify, render_template, request
 import joblib
+import pandas as pd
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,6 +33,27 @@ from system.feature_engineering import (  # noqa: E402
 
 MODEL_PATH = ROOT / "models" / "room_occupancy_final_model.joblib"
 METADATA_PATH = ROOT / "models" / "room_occupancy_final_model_metadata.json"
+RAW_DATA_PATH = ROOT / "data" / "raw" / "Occupancy_Estimation.csv"
+
+RAW_RANDOM_FIELDS = [
+    "Time",
+    "S1_Temp",
+    "S2_Temp",
+    "S3_Temp",
+    "S4_Temp",
+    "S1_Light",
+    "S2_Light",
+    "S3_Light",
+    "S4_Light",
+    "S1_Sound",
+    "S2_Sound",
+    "S3_Sound",
+    "S4_Sound",
+    "S5_CO2",
+    "S5_CO2_Slope",
+    "S6_PIR",
+    "S7_PIR",
+]
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
@@ -50,6 +73,13 @@ try:
 except Exception as exc:  # keep the UI available with a useful error message
     MODEL = None
     MODEL_LOAD_ERROR = str(exc)
+
+try:
+    RANDOM_SOURCE = pd.read_csv(RAW_DATA_PATH, usecols=RAW_RANDOM_FIELDS)
+    RANDOM_SOURCE_ERROR = None
+except Exception as exc:
+    RANDOM_SOURCE = None
+    RANDOM_SOURCE_ERROR = str(exc)
 
 
 PREDICTION_LABELS = {
@@ -87,6 +117,36 @@ def health():
             "target_classes": METADATA["target_classes"],
         }
     )
+
+
+@app.get("/api/random-input")
+def random_input():
+    """Return one random real sensor record without exposing its target label."""
+
+    if RANDOM_SOURCE is None or RANDOM_SOURCE.empty:
+        return (
+            jsonify(
+                {
+                    "error": "Random sample data could not be loaded.",
+                    "details": RANDOM_SOURCE_ERROR,
+                }
+            ),
+            503,
+        )
+
+    row = RANDOM_SOURCE.iloc[secrets.randbelow(len(RANDOM_SOURCE))]
+    sample = {"time": str(row["Time"])}
+
+    for field in RAW_RANDOM_FIELDS:
+        if field == "Time":
+            continue
+        value = row[field]
+        if field in ("S6_PIR", "S7_PIR"):
+            sample[field] = int(value)
+        else:
+            sample[field] = float(value)
+
+    return jsonify({"sample": sample, "available_records": int(len(RANDOM_SOURCE))})
 
 
 @app.post("/api/predict")
