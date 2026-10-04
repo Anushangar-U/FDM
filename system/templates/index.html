@@ -24,9 +24,12 @@
           <p>All fields are required. PIR values must be 0 or 1.</p>
           <p class="range-note">Values outside the dataset's typical range are highlighted in red, but they can still be submitted for prediction.</p>
         </div>
-        <div class="sample-bookmark" aria-label="Random sensor values">
-          <button class="secondary-button" id="sample-button" type="button">🎲 Generate random values</button>
-          <small id="sample-status">Creates new values using dataset-informed realistic limits</small>
+        <div class="sample-bookmark" aria-label="Input autofill options">
+          <div class="sample-actions">
+            <button class="secondary-button" id="real-sample-button" type="button">📋 Load real dataset row</button>
+            <button class="secondary-button" id="sample-button" type="button">🎲 Generate random values</button>
+          </div>
+          <small id="sample-status">Choose a real observation or generate new bounded values</small>
         </div>
       </div>
 
