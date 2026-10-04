@@ -17,6 +17,8 @@ const numericFields = [
   "S5_CO2", "S5_CO2_Slope", "S6_PIR", "S7_PIR",
 ];
 
+let inputRanges = {};
+
 function closePredictionModal() {
   if (predictionModal.open) {
     predictionModal.close();
@@ -62,9 +64,122 @@ function collectPayload() {
   return payload;
 }
 
+function formatRangeValue(field, value) {
+  const number = Number(value);
+  if (field.includes("Sound") || field === "S5_CO2_Slope") {
+    return number.toFixed(3);
+  }
+  if (field.includes("Temp")) {
+    return number.toFixed(2);
+  }
+  return number.toFixed(0);
+}
+
+function getWarningElement(field) {
+  const input = document.getElementById(field);
+  if (!input) {
+    return null;
+  }
+
+  const label = input.closest("label");
+  if (!label) {
+    return null;
+  }
+
+  let warning = label.querySelector(".field-warning");
+  if (!warning) {
+    warning = document.createElement("small");
+    warning.className = "field-warning";
+    warning.hidden = true;
+    label.appendChild(warning);
+  }
+
+  return warning;
+}
+
+function setFieldWarning(field, message = "") {
+  const input = document.getElementById(field);
+  const warning = getWarningElement(field);
+  if (!input || !warning) {
+    return;
+  }
+
+  const hasWarning = Boolean(message);
+  warning.textContent = message;
+  warning.hidden = !hasWarning;
+  input.closest("label")?.classList.toggle("has-range-warning", hasWarning);
+}
+
+function updateFieldWarning(field) {
+  const range = inputRanges[field];
+  if (!range) {
+    return false;
+  }
+
+  const input = document.getElementById(field);
+  const value = Number(input.value);
+  if (input.value === "" || !Number.isFinite(value)) {
+    setFieldWarning(field, "");
+    return false;
+  }
+
+  const low = Number(range.typical_low);
+  const high = Number(range.typical_high);
+  if (value < low || value > high) {
+    setFieldWarning(
+      field,
+      `Unusual for this dataset. Typical range: ${formatRangeValue(field, low)}–${formatRangeValue(field, high)}. Prediction is still allowed.`,
+    );
+    return true;
+  }
+
+  setFieldWarning(field, "");
+  return false;
+}
+
+function updateAllRangeWarnings() {
+  let count = 0;
+  for (const field of Object.keys(inputRanges)) {
+    if (updateFieldWarning(field)) {
+      count += 1;
+    }
+  }
+  return count;
+}
+
+function applyServerWarnings(warnings = []) {
+  updateAllRangeWarnings();
+  for (const warning of warnings) {
+    const field = warning.field;
+    if (!field || !document.getElementById(field)) {
+      continue;
+    }
+    setFieldWarning(
+      field,
+      `Unusual for this dataset. Typical range: ${formatRangeValue(field, warning.typical_low)}–${formatRangeValue(field, warning.typical_high)}. Prediction is still allowed.`,
+    );
+  }
+}
+
+async function loadInputRanges() {
+  try {
+    const response = await fetch("/api/input-ranges");
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "Could not load input ranges.");
+    }
+
+    inputRanges = data.ranges || {};
+    updateAllRangeWarnings();
+  } catch (error) {
+    console.warn("Range guidance unavailable:", error);
+  }
+}
+
 async function autofillRandomSample() {
   sampleButton.disabled = true;
-  sampleButton.textContent = "Randomizing…";
+  sampleButton.textContent = "Generating…";
+  sampleStatus.classList.remove("status-error");
 
   try {
     const response = await fetch("/api/random-input");
@@ -78,14 +193,22 @@ async function autofillRandomSample() {
       document.getElementById(field).value = value;
     }
 
-    sampleStatus.textContent = `Random real sensor record loaded · ${data.available_records.toLocaleString()} records available`;
+    updateAllRangeWarnings();
+    sampleStatus.textContent = "New values generated within dataset-informed realistic limits";
     closePredictionModal();
   } catch (error) {
     sampleStatus.textContent = error.message;
+    sampleStatus.classList.add("status-error");
   } finally {
     sampleButton.disabled = false;
-    sampleButton.textContent = "🎲 Randomize sensor values";
+    sampleButton.textContent = "🎲 Generate random values";
   }
+}
+
+for (const field of numericFields) {
+  const input = document.getElementById(field);
+  input?.addEventListener("input", () => updateFieldWarning(field));
+  input?.addEventListener("change", () => updateFieldWarning(field));
 }
 
 sampleButton.addEventListener("click", autofillRandomSample);
@@ -101,8 +224,9 @@ predictionModal.addEventListener("click", (event) => {
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  // Browser validation catches required fields, negative values where prohibited,
-  // and invalid PIR selections before any request is sent to the backend.
+  // Hard validation catches missing values, invalid numbers, negative values for
+  // sensors that cannot be negative, and PIR values outside 0/1. Soft range
+  // warnings do not block prediction.
   if (!form.reportValidity()) {
     return;
   }
@@ -115,6 +239,7 @@ form.addEventListener("submit", async (event) => {
     return;
   }
 
+  updateAllRangeWarnings();
   submitButton.disabled = true;
   submitButton.textContent = "Predicting…";
 
@@ -131,10 +256,16 @@ form.addEventListener("submit", async (event) => {
       throw new Error(data.error || "Prediction request failed.");
     }
 
+    applyServerWarnings(data.warnings || []);
+    const warningCount = (data.warnings || []).length;
+    const detail = warningCount > 0
+      ? `Prediction generated. ${warningCount} input value${warningCount === 1 ? " is" : "s are"} outside the typical dataset range, so interpret this result with extra caution.`
+      : "Based on the current sensor readings.";
+
     showResult({
       prediction: data.prediction,
       message: data.message,
-      detail: "Based on the current sensor readings.",
+      detail,
       probabilities: data.probabilities,
     });
   } catch (error) {
@@ -148,3 +279,5 @@ form.addEventListener("submit", async (event) => {
     submitButton.textContent = "Predict occupancy";
   }
 });
+
+loadInputRanges();
