@@ -7,6 +7,7 @@ const modalDone = document.getElementById("modal-done");
 const occupancyNumber = document.getElementById("occupancy-number");
 const predictionMessage = document.getElementById("prediction-message");
 const predictionDetail = document.getElementById("prediction-detail");
+const probabilityPanel = document.getElementById("probability-panel");
 const submitButton = form.querySelector('button[type="submit"]');
 
 const numericFields = [
@@ -80,11 +81,24 @@ function closePredictionModal() {
   }
 }
 
-function showResult({ prediction = "!", message, detail = "", isError = false }) {
+function renderProbabilities(probabilities) {
+  const hasProbabilities = probabilities && typeof probabilities === "object";
+  probabilityPanel.hidden = !hasProbabilities;
+
+  for (let classId = 0; classId <= 3; classId += 1) {
+    const value = hasProbabilities ? Number(probabilities[String(classId)] ?? 0) : 0;
+    const percent = Math.max(0, Math.min(100, value * 100));
+    document.getElementById(`probability-${classId}-text`).textContent = `${percent.toFixed(1)}%`;
+    document.getElementById(`probability-${classId}-bar`).style.width = `${percent}%`;
+  }
+}
+
+function showResult({ prediction = "!", message, detail = "", probabilities = null, isError = false }) {
   occupancyNumber.textContent = prediction;
   predictionMessage.textContent = message;
   predictionDetail.textContent = detail;
   predictionModal.classList.toggle("error", isError);
+  renderProbabilities(isError ? null : probabilities);
 
   if (!predictionModal.open) {
     predictionModal.showModal();
@@ -178,7 +192,8 @@ form.addEventListener("submit", async (event) => {
     showResult({
       prediction: data.prediction,
       message: data.message,
-      detail: `Prediction generated using ${data.model}.`,
+      detail: "Based on the current sensor readings.",
+      probabilities: data.probabilities,
     });
   } catch (error) {
     showResult({
