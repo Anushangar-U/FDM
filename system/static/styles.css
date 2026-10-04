@@ -112,8 +112,15 @@ h1 {
   gap: 6px;
 }
 
+.sample-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .sample-bookmark small {
-  max-width: 300px;
+  max-width: 360px;
   color: #64748b;
   font-size: 0.78rem;
   font-weight: 700;
@@ -386,6 +393,10 @@ label.has-range-warning select {
   .sample-bookmark {
     width: 100%;
     align-items: stretch;
+  }
+
+  .sample-actions {
+    flex-direction: column;
   }
 
   .sample-bookmark small {
