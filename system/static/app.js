@@ -1,5 +1,6 @@
 const form = document.getElementById("prediction-form");
 const sampleButton = document.getElementById("sample-button");
+const realSampleButton = document.getElementById("real-sample-button");
 const sampleStatus = document.getElementById("sample-status");
 const predictionModal = document.getElementById("prediction-modal");
 const modalClose = document.getElementById("modal-close");
@@ -161,6 +162,23 @@ function applyServerWarnings(warnings = []) {
   }
 }
 
+function fillForm(sample) {
+  for (const [field, value] of Object.entries(sample)) {
+    const input = document.getElementById(field);
+    if (input) {
+      input.value = value;
+    }
+  }
+
+  updateAllRangeWarnings();
+  closePredictionModal();
+}
+
+function setAutofillBusy(isBusy) {
+  sampleButton.disabled = isBusy;
+  realSampleButton.disabled = isBusy;
+}
+
 async function loadInputRanges() {
   try {
     const response = await fetch("/api/input-ranges");
@@ -177,7 +195,7 @@ async function loadInputRanges() {
 }
 
 async function autofillRandomSample() {
-  sampleButton.disabled = true;
+  setAutofillBusy(true);
   sampleButton.textContent = "Generating…";
   sampleStatus.classList.remove("status-error");
 
@@ -189,19 +207,38 @@ async function autofillRandomSample() {
       throw new Error(data.error || "Could not generate random sensor values.");
     }
 
-    for (const [field, value] of Object.entries(data.sample)) {
-      document.getElementById(field).value = value;
-    }
-
-    updateAllRangeWarnings();
-    sampleStatus.textContent = "New values generated within dataset-informed realistic limits";
-    closePredictionModal();
+    fillForm(data.sample);
+    sampleStatus.textContent = "Generated new values within dataset-informed realistic limits";
   } catch (error) {
     sampleStatus.textContent = error.message;
     sampleStatus.classList.add("status-error");
   } finally {
-    sampleButton.disabled = false;
+    setAutofillBusy(false);
     sampleButton.textContent = "🎲 Generate random values";
+  }
+}
+
+async function autofillRealSample() {
+  setAutofillBusy(true);
+  realSampleButton.textContent = "Loading…";
+  sampleStatus.classList.remove("status-error");
+
+  try {
+    const response = await fetch("/api/real-input");
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Could not load a real dataset row.");
+    }
+
+    fillForm(data.sample);
+    sampleStatus.textContent = `Loaded one real observation from ${data.available_records.toLocaleString()} dataset rows`;
+  } catch (error) {
+    sampleStatus.textContent = error.message;
+    sampleStatus.classList.add("status-error");
+  } finally {
+    setAutofillBusy(false);
+    realSampleButton.textContent = "📋 Load real dataset row";
   }
 }
 
@@ -212,6 +249,7 @@ for (const field of numericFields) {
 }
 
 sampleButton.addEventListener("click", autofillRandomSample);
+realSampleButton.addEventListener("click", autofillRealSample);
 modalClose.addEventListener("click", closePredictionModal);
 modalDone.addEventListener("click", closePredictionModal);
 
