@@ -22,10 +22,11 @@
         <div>
           <h2>Sensor readings</h2>
           <p>All fields are required. PIR values must be 0 or 1.</p>
+          <p class="range-note">Values outside the dataset's typical range are highlighted in red, but they can still be submitted for prediction.</p>
         </div>
         <div class="sample-bookmark" aria-label="Random sensor values">
-          <button class="secondary-button" id="sample-button" type="button">🎲 Randomize sensor values</button>
-          <small id="sample-status">Loads a random real record from the project dataset</small>
+          <button class="secondary-button" id="sample-button" type="button">🎲 Generate random values</button>
+          <small id="sample-status">Creates new values using dataset-informed realistic limits</small>
         </div>
       </div>
 
