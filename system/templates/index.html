@@ -106,6 +106,28 @@
       <div class="occupancy-number" id="occupancy-number">–</div>
       <h2 id="prediction-message"></h2>
       <p id="prediction-detail"></p>
+
+      <section class="probability-panel" id="probability-panel" aria-label="Model probability by occupancy class">
+        <h3>Model probability</h3>
+        <div class="probability-row">
+          <div class="probability-label"><span>0 people</span><strong id="probability-0-text">0%</strong></div>
+          <div class="probability-track"><div class="probability-fill" id="probability-0-bar"></div></div>
+        </div>
+        <div class="probability-row">
+          <div class="probability-label"><span>1 person</span><strong id="probability-1-text">0%</strong></div>
+          <div class="probability-track"><div class="probability-fill" id="probability-1-bar"></div></div>
+        </div>
+        <div class="probability-row">
+          <div class="probability-label"><span>2 people</span><strong id="probability-2-text">0%</strong></div>
+          <div class="probability-track"><div class="probability-fill" id="probability-2-bar"></div></div>
+        </div>
+        <div class="probability-row">
+          <div class="probability-label"><span>3 people</span><strong id="probability-3-text">0%</strong></div>
+          <div class="probability-track"><div class="probability-fill" id="probability-3-bar"></div></div>
+        </div>
+        <p class="probability-note">These are model-estimated probabilities, not guaranteed real-world certainty.</p>
+      </section>
+
       <button class="primary-button modal-done" id="modal-done" type="button">Close</button>
     </div>
   </dialog>
