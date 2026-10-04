@@ -97,14 +97,18 @@
         <button class="primary-button" type="submit">Predict occupancy</button>
       </form>
     </section>
+  </main>
 
-    <section class="result-card" id="result-card" aria-live="polite" hidden>
-      <p class="result-label">Prediction</p>
+  <dialog class="prediction-modal" id="prediction-modal" aria-labelledby="prediction-message">
+    <div class="modal-card">
+      <button class="modal-close" id="modal-close" type="button" aria-label="Close prediction popup">×</button>
+      <p class="result-label">Prediction result</p>
       <div class="occupancy-number" id="occupancy-number">–</div>
       <h2 id="prediction-message"></h2>
       <p id="prediction-detail"></p>
-    </section>
-  </main>
+      <button class="primary-button modal-done" id="modal-done" type="button">Close</button>
+    </div>
+  </dialog>
 
   <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
