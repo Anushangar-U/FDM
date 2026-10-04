@@ -1,7 +1,9 @@
 const form = document.getElementById("prediction-form");
 const sampleButton = document.getElementById("sample-button");
 const sampleStatus = document.getElementById("sample-status");
-const resultCard = document.getElementById("result-card");
+const predictionModal = document.getElementById("prediction-modal");
+const modalClose = document.getElementById("modal-close");
+const modalDone = document.getElementById("modal-done");
 const occupancyNumber = document.getElementById("occupancy-number");
 const predictionMessage = document.getElementById("prediction-message");
 const predictionDetail = document.getElementById("prediction-detail");
@@ -72,13 +74,21 @@ const samplePresets = [
 
 let lastSampleIndex = -1;
 
+function closePredictionModal() {
+  if (predictionModal.open) {
+    predictionModal.close();
+  }
+}
+
 function showResult({ prediction = "!", message, detail = "", isError = false }) {
   occupancyNumber.textContent = prediction;
   predictionMessage.textContent = message;
   predictionDetail.textContent = detail;
-  resultCard.classList.toggle("error", isError);
-  resultCard.hidden = false;
-  resultCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  predictionModal.classList.toggle("error", isError);
+
+  if (!predictionModal.open) {
+    predictionModal.showModal();
+  }
 }
 
 function collectPayload() {
@@ -119,14 +129,24 @@ function autofillRandomSample() {
   }
 
   sampleStatus.textContent = `${sample.name} loaded · ${samplePresets.length} saved samples`;
-  resultCard.hidden = true;
+  closePredictionModal();
 }
 
 sampleButton.addEventListener("click", autofillRandomSample);
+modalClose.addEventListener("click", closePredictionModal);
+modalDone.addEventListener("click", closePredictionModal);
+
+predictionModal.addEventListener("click", (event) => {
+  if (event.target === predictionModal) {
+    closePredictionModal();
+  }
+});
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
+  // Browser validation catches required fields, negative values where prohibited,
+  // and invalid PIR selections before any request is sent to the backend.
   if (!form.reportValidity()) {
     return;
   }
@@ -135,7 +155,7 @@ form.addEventListener("submit", async (event) => {
   try {
     payload = collectPayload();
   } catch (error) {
-    showResult({ message: error.message, isError: true });
+    showResult({ message: error.message, detail: "Please correct the input and try again.", isError: true });
     return;
   }
 
@@ -158,12 +178,12 @@ form.addEventListener("submit", async (event) => {
     showResult({
       prediction: data.prediction,
       message: data.message,
-      detail: "Prediction generated using the saved final Random Forest pipeline.",
+      detail: `Prediction generated using ${data.model}.`,
     });
   } catch (error) {
     showResult({
       message: error.message,
-      detail: "Check that the backend is running and the trained model can be loaded.",
+      detail: "The input was rejected or the prediction service could not complete the request.",
       isError: true,
     });
   } finally {
