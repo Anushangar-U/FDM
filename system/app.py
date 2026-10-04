@@ -110,7 +110,8 @@ def predict():
         model_input = build_model_frame(payload, EXPECTED_FEATURES)
         prediction = int(MODEL.predict(model_input)[0])
         probabilities = MODEL.predict_proba(model_input)[0]
-        classes = [int(value) for value in MODEL.classes_]
+        model_classes = getattr(MODEL, "classes_", METADATA["target_classes"])
+        classes = [int(value) for value in model_classes]
     except InputValidationError as exc:
         return jsonify({"error": str(exc)}), 400
     except Exception as exc:
