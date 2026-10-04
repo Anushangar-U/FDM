@@ -109,6 +109,8 @@ def predict():
     try:
         model_input = build_model_frame(payload, EXPECTED_FEATURES)
         prediction = int(MODEL.predict(model_input)[0])
+        probabilities = MODEL.predict_proba(model_input)[0]
+        classes = [int(value) for value in MODEL.classes_]
     except InputValidationError as exc:
         return jsonify({"error": str(exc)}), 400
     except Exception as exc:
@@ -118,11 +120,16 @@ def predict():
     if prediction not in PREDICTION_LABELS:
         return jsonify({"error": f"Model returned an unexpected class: {prediction}"}), 500
 
+    probability_map = {
+        str(class_id): round(float(probability), 6)
+        for class_id, probability in zip(classes, probabilities)
+    }
+
     return jsonify(
         {
             "prediction": prediction,
             "message": PREDICTION_LABELS[prediction],
-            "model": MODEL_NAME,
+            "probabilities": probability_map,
         }
     )
 
