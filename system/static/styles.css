@@ -197,8 +197,8 @@ select:focus {
 }
 
 .prediction-modal {
-  width: min(520px, calc(100% - 28px));
-  max-width: 520px;
+  width: min(560px, calc(100% - 28px));
+  max-width: 560px;
   padding: 0;
   border: 0;
   border-radius: 24px;
@@ -271,10 +271,64 @@ select:focus {
   margin-bottom: 10px;
 }
 
-.modal-card p:last-of-type {
-  margin-bottom: 24px;
+#prediction-detail {
+  margin-bottom: 22px;
   color: #64748b;
   line-height: 1.55;
+}
+
+.probability-panel {
+  margin: 0 0 24px;
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #f8fafc;
+  text-align: left;
+}
+
+.probability-panel[hidden] {
+  display: none;
+}
+
+.probability-panel h3 {
+  margin: 0 0 14px;
+  font-size: 0.96rem;
+  color: #334155;
+}
+
+.probability-row + .probability-row {
+  margin-top: 12px;
+}
+
+.probability-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 5px;
+  font-size: 0.84rem;
+  color: #475569;
+}
+
+.probability-track {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.probability-fill {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: #0284c7;
+  transition: width 300ms ease;
+}
+
+.probability-note {
+  margin: 14px 0 0;
+  color: #64748b;
+  font-size: 0.76rem;
+  line-height: 1.45;
 }
 
 .modal-done {
