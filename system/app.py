@@ -183,6 +183,24 @@ def _generate_random_input() -> dict[str, float | int | str]:
     return sample
 
 
+def _sample_real_input() -> dict[str, float | int | str]:
+    """Return one unchanged real sensor observation without its target label."""
+
+    row = RANDOM_SOURCE.iloc[secrets.randbelow(len(RANDOM_SOURCE))]
+    sample: dict[str, float | int | str] = {"time": str(row["Time"])}
+
+    for field in RAW_RANDOM_FIELDS:
+        if field == "Time":
+            continue
+        value = row[field]
+        if field in ("S6_PIR", "S7_PIR"):
+            sample[field] = int(value)
+        else:
+            sample[field] = float(value)
+
+    return sample
+
+
 def _range_warnings(payload: dict) -> list[dict[str, float | str]]:
     """Return soft out-of-distribution warnings without blocking prediction."""
 
@@ -317,6 +335,30 @@ def random_input():
         {
             "sample": sample,
             "generation": "dataset-informed random values",
+        }
+    )
+
+
+@app.get("/api/real-input")
+def real_input():
+    """Return one real observation sampled from the full raw dataset."""
+
+    if RANDOM_SOURCE is None or RANDOM_SOURCE.empty:
+        return (
+            jsonify(
+                {
+                    "error": "Real sample data could not be loaded.",
+                    "details": RANDOM_SOURCE_ERROR,
+                }
+            ),
+            503,
+        )
+
+    return jsonify(
+        {
+            "sample": _sample_real_input(),
+            "available_records": int(len(RANDOM_SOURCE)),
+            "generation": "real dataset record",
         }
     )
 
