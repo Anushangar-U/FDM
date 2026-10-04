@@ -17,64 +17,6 @@ const numericFields = [
   "S5_CO2", "S5_CO2_Slope", "S6_PIR", "S7_PIR",
 ];
 
-// Five fixed, realistic demo records taken from the project dataset.
-// The target class is intentionally not stored here because the frontend should
-// send only sensor inputs to the backend and let the saved model predict it.
-const samplePresets = [
-  {
-    name: "Demo sample 1",
-    values: {
-      time: "10:49:41",
-      S1_Temp: 24.94, S2_Temp: 24.75, S3_Temp: 24.56, S4_Temp: 25.38,
-      S1_Light: 121, S2_Light: 34, S3_Light: 53, S4_Light: 40,
-      S1_Sound: 0.08, S2_Sound: 0.19, S3_Sound: 0.06, S4_Sound: 0.06,
-      S5_CO2: 390, S5_CO2_Slope: 0.769230769231, S6_PIR: 0, S7_PIR: 0,
-    },
-  },
-  {
-    name: "Demo sample 2",
-    values: {
-      time: "11:42:16",
-      S1_Temp: 25.5, S2_Temp: 25.56, S3_Temp: 24.88, S4_Temp: 25.81,
-      S1_Light: 155, S2_Light: 237, S3_Light: 71, S4_Light: 55,
-      S1_Sound: 1.87, S2_Sound: 0.56, S3_Sound: 0.23, S4_Sound: 0.14,
-      S5_CO2: 500, S5_CO2_Slope: 1.99615384615, S6_PIR: 1, S7_PIR: 1,
-    },
-  },
-  {
-    name: "Demo sample 3",
-    values: {
-      time: "13:50:56",
-      S1_Temp: 26.13, S2_Temp: 27.06, S3_Temp: 26, S4_Temp: 26.31,
-      S1_Light: 165, S2_Light: 254, S3_Light: 274, S4_Light: 71,
-      S1_Sound: 1.13, S2_Sound: 1.4, S3_Sound: 1.51, S4_Sound: 1.36,
-      S5_CO2: 910, S5_CO2_Slope: 1.39230769231, S6_PIR: 1, S7_PIR: 1,
-    },
-  },
-  {
-    name: "Demo sample 4",
-    values: {
-      time: "20:00:36",
-      S1_Temp: 26.13, S2_Temp: 26.31, S3_Temp: 25.81, S4_Temp: 26.19,
-      S1_Light: 0, S2_Light: 0, S3_Light: 0, S4_Light: 0,
-      S1_Sound: 0.07, S2_Sound: 0.05, S3_Sound: 0.06, S4_Sound: 0.06,
-      S5_CO2: 1055, S5_CO2_Slope: -4.78461538462, S6_PIR: 0, S7_PIR: 0,
-    },
-  },
-  {
-    name: "Demo sample 5",
-    values: {
-      time: "13:51:27",
-      S1_Temp: 26.06, S2_Temp: 27.13, S3_Temp: 26, S4_Temp: 26.31,
-      S1_Light: 165, S2_Light: 256, S3_Light: 279, S4_Light: 71,
-      S1_Sound: 0.55, S2_Sound: 0.14, S3_Sound: 0.85, S4_Sound: 0.25,
-      S5_CO2: 910, S5_CO2_Slope: 1.35, S6_PIR: 1, S7_PIR: 1,
-    },
-  },
-];
-
-let lastSampleIndex = -1;
-
 function closePredictionModal() {
   if (predictionModal.open) {
     predictionModal.close();
@@ -120,30 +62,30 @@ function collectPayload() {
   return payload;
 }
 
-function randomSampleIndex() {
-  if (samplePresets.length === 1) {
-    return 0;
+async function autofillRandomSample() {
+  sampleButton.disabled = true;
+  sampleButton.textContent = "Randomizing…";
+
+  try {
+    const response = await fetch("/api/random-input");
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Could not generate random sensor values.");
+    }
+
+    for (const [field, value] of Object.entries(data.sample)) {
+      document.getElementById(field).value = value;
+    }
+
+    sampleStatus.textContent = `Random real sensor record loaded · ${data.available_records.toLocaleString()} records available`;
+    closePredictionModal();
+  } catch (error) {
+    sampleStatus.textContent = error.message;
+  } finally {
+    sampleButton.disabled = false;
+    sampleButton.textContent = "🎲 Randomize sensor values";
   }
-
-  let index;
-  do {
-    index = Math.floor(Math.random() * samplePresets.length);
-  } while (index === lastSampleIndex);
-
-  return index;
-}
-
-function autofillRandomSample() {
-  const index = randomSampleIndex();
-  const sample = samplePresets[index];
-  lastSampleIndex = index;
-
-  for (const [field, value] of Object.entries(sample.values)) {
-    document.getElementById(field).value = value;
-  }
-
-  sampleStatus.textContent = `${sample.name} loaded · ${samplePresets.length} saved samples`;
-  closePredictionModal();
 }
 
 sampleButton.addEventListener("click", autofillRandomSample);
