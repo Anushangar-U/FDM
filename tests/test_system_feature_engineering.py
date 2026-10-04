@@ -77,6 +77,26 @@ class FeatureEngineeringTests(unittest.TestCase):
         with self.assertRaises(InputValidationError):
             build_model_frame(payload, EXPECTED_FEATURES)
 
+    def test_invalid_time_is_rejected(self):
+        payload = dict(SAMPLE)
+        payload["time"] = "25:61"
+        with self.assertRaises(InputValidationError):
+            build_model_frame(payload, EXPECTED_FEATURES)
+
+    def test_negative_light_sound_and_co2_are_rejected(self):
+        for field in ("S1_Light", "S1_Sound", "S5_CO2"):
+            with self.subTest(field=field):
+                payload = dict(SAMPLE)
+                payload[field] = -1
+                with self.assertRaises(InputValidationError):
+                    build_model_frame(payload, EXPECTED_FEATURES)
+
+    def test_non_numeric_sensor_is_rejected(self):
+        payload = dict(SAMPLE)
+        payload["S2_Temp"] = "not-a-number"
+        with self.assertRaises(InputValidationError):
+            build_model_frame(payload, EXPECTED_FEATURES)
+
 
 if __name__ == "__main__":
     unittest.main()
